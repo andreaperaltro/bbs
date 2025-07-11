@@ -43,5 +43,15 @@
 - Use DevTools to inspect elements and verify palette classes are applied.
 - Keep all styling changes in Tailwind and the palette for consistency.
 
+## Next.js Image Optimization
+- External images (e.g., from via.placeholder.com) require explicit configuration in `next.config.js`.
+- The project currently uses:
+  ```js
+  images: {
+    domains: ['via.placeholder.com'],
+  }
+  ```
+- **Note:** The `images.domains` configuration is deprecated in recent Next.js versions. For future compatibility, use `images.remotePatterns` as described in the [Next.js documentation](https://nextjs.org/docs/messages/next-image-unconfigured).
+
 ---
 **Always update this file after significant changes.** 
