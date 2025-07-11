@@ -1,103 +1,194 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-export default function Home() {
+const defaultSections = [
+  { key: "A", label: "About", content: `My final goal is to convey thoughts and stories through different mediums and to raise the level of my creative developments with the constant research and study of new techniques for both client and personal projects. I am an avid observer of the world direction in terms of creativity, art and connections with a deep knowledge of the counterculture and the trends, might that be in design, music, movies, products and services. I believe that design is the ultimate representation of the understanding of human behaviours.` },
+  { key: "T", label: "Techniques", content: `<strong>Graphic design:</strong> Adobe Creative Suite, Procreate<br/><strong>Digital design:</strong> Figma, Sketch<br/><strong>Generative:</strong> Processing, Java, Nodebox<br/><strong>3D Design:</strong> Cinema 4D, Blender` },
+  { key: "S", label: "Skills", content: `Concept generation // Narrative strategy // Art direction // Typography // Illustration // Pattern design // Generative art // Digital design // User experience // 3D Design // Fashion product development` },
+  { key: "C", label: "Clients", content: `<div class='flex flex-wrap gap-2 underline'><a href='https://www.oakley.com/' target='_blank' rel='noopener noreferrer'>Oakley</a>, <a href='https://www.palaceskateboards.com/' target='_blank' rel='noopener noreferrer'>Palace Skateboards</a>, <a href='https://www.ngg.net/' target='_blank' rel='noopener noreferrer'>NGG</a>, <a href='https://www.reebok.com/' target='_blank' rel='noopener noreferrer'>Reebok</a>, <a href='https://www.polimoda.com/' target='_blank' rel='noopener noreferrer'>Polimoda</a>, <a href='https://www.brionvega.it/' target='_blank' rel='noopener noreferrer'>Brionvega</a>, <a href='https://www.fornasetti.com/' target='_blank' rel='noopener noreferrer'>Fornasetti</a>, <a href='https://www.vivoconcerti.com/' target='_blank' rel='noopener noreferrer'>Vivo Concerti</a>, <a href='https://www.canon.com/' target='_blank' rel='noopener noreferrer'>Canon</a>, <a href='https://www.lonelyplanet.com/' target='_blank' rel='noopener noreferrer'>Lonely Planet</a>, <a href='https://www.rittersport.com/' target='_blank' rel='noopener noreferrer'>Ritter Sport</a>, <a href='https://www.zooppa.com/' target='_blank' rel='noopener noreferrer'>Zooppa</a>, <a href='https://www.contraste.com/' target='_blank' rel='noopener noreferrer'>Contraste</a></div>` },
+  { key: "L", label: "Links", content: `<div class='flex flex-wrap gap-4 underline'><a href='https://www.instagram.com/' target='_blank' rel='noopener noreferrer'>Instagram</a> <a href='https://www.linkedin.com/' target='_blank' rel='noopener noreferrer'>LinkedIn</a> <a href='https://github.com/' target='_blank' rel='noopener noreferrer'>Github</a></div>` },
+  { key: "D", label: "Lecturing", content: `<span>Teaching Digital Design @ <a href='https://www.polimoda.com/' target='_blank' rel='noopener noreferrer' class='underline'>Polimoda, Florence</a></span>` },
+  { key: "I", label: "Inspiration", content: `<a href='#' class='underline'>Interesting and inspiring links</a>` },
+  { key: "M", label: "Schedule", content: `<span>Schedule a meeting with me </span><a href='https://calendar.app.google/2HhMiVkUSuZTfMWz5' target='_blank' rel='noopener noreferrer' class='underline'>https://calendar.app.google/2HhMiVkUSuZTfMWz5</a>` },
+];
+
+function PortfolioSection() {
+  const [entries, setEntries] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchPortfolio() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "portfolio"));
+        const data = querySnapshot.docs.map(doc => doc.data());
+        setEntries(data);
+      } catch (e) {
+        setEntries([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPortfolio();
+  }, []);
+
+  if (loading) {
+    return <div className="text-bbs-yellow text-xl">Loading portfolio...</div>;
+  }
+  if (!entries.length) {
+    return <div className="text-bbs-yellow text-xl">No portfolio entries found.</div>;
+  }
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="space-y-10">
+      {entries.map((entry, idx) => (
+        <div key={idx} className="mb-8 border-b border-bbs-magenta pb-8 last:border-b-0 last:pb-0">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-bbs-yellow mb-1">{entry.title}</h2>
+              <div className="text-base md:text-lg italic text-bbs-cyan">{entry.discipline}</div>
+              <div className="text-base md:text-lg">
+                <span className="font-bold text-bbs-yellow">Client: </span>
+                {entry.clientUrl ? (
+                  <a href={entry.clientUrl} target="_blank" rel="noopener noreferrer" className="underline text-bbs-cyan hover:text-bbs-yellow">{entry.client}</a>
+                ) : (
+                  <span>{entry.client}</span>
+                )}
+              </div>
+            </div>
+            <div className="text-base md:text-lg mt-2 md:mt-0 text-bbs-cyan">{entry.description}</div>
+          </div>
+          {entry.images && entry.images.length > 0 && (
+            <div className="overflow-x-auto">
+              <div className="flex flex-row gap-4 min-w-[300px] pb-2">
+                {entry.images.map((img: string, i: number) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={entry.title + " image " + (i + 1)}
+                    className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md"
+                    style={{ minWidth: '200px' }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ))}
     </div>
   );
+}
+
+export default function Home() {
+  const [sections, setSections] = useState(defaultSections);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState<string>(defaultSections[0].key);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    async function fetchSections() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "sections"));
+        const data = querySnapshot.docs.map(doc => doc.data());
+        if (data.length > 0) setSections(data as typeof defaultSections);
+      } catch (e) {
+        // fallback to defaultSections
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSections();
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const pressed = e.key.toUpperCase();
+      if (sections.some((s) => s.key === pressed)) {
+        setOpen((prev) => (prev === pressed ? sections[0].key : pressed));
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [sections]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-bbs-bg text-bbs-cyan font-[amiga4ever] text-base md:text-lg lg:text-xl">
+        <span className="text-bbs-yellow text-2xl">Loading...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full flex flex-col bg-bbs-bg text-bbs-fg font-[amiga4ever] text-base md:text-lg lg:text-xl">
+      {/* Top Menu Bar */}
+      <MenuBar open={open} setOpen={setOpen} position="top" sections={sections} />
+      {/* Flex row for main content area */}
+      <div className="flex flex-col md:flex-row flex-1 w-full items-stretch">
+        {/* Main content area, left-aligned, BBS style only around content */}
+        <div className="mt-6 mb-8 ml-0 w-full flex-1">
+          {/* Profile image and name always visible */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 flex items-center justify-center rounded overflow-hidden mb-2">
+              {!imgError ? (
+                <Image 
+                  src="/profile.png" 
+                  alt="Andrea Perato" 
+                  width={128} 
+                  height={128} 
+                  className="object-cover w-full h-full" 
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <span className="text-3xl md:text-5xl text-bbs-blue">AP</span>
+              )}
+            </div>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-bbs-yellow">Andrea Perato</h1>
+          </div>
+          {/* Only show the selected section, with BBS border and background only around the content */}
+          <div className="w-full">
+            {sections.map((section) => (
+              <div key={section.key} className={`${open === section.key ? "block" : "hidden"} border-2 border-bbs-magenta bg-bbs-bg p-2 sm:p-4 md:p-6 shadow-lg rounded-none mb-4`}>
+                {section.key === "P" ? (
+                  <PortfolioSection />
+                ) : (
+                  <SectionContent dangerouslySetInnerHTML={{__html: section.content}} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Right side empty for now, can be used for future widgets or spacing */}
+        <div className="hidden lg:block" />
+      </div>
+      {/* Bottom Menu Bar */}
+      <MenuBar open={open} setOpen={setOpen} position="bottom" sections={sections} />
+    </div>
+  );
+}
+
+function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[] }) {
+  return (
+    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-base md:text-xl lg:text-2xl font-[amiga4ever]`}>
+      {sections.map((s, i) => (
+        <button
+          key={s.key}
+          onClick={() => setOpen(s.key)}
+          className={`px-1 md:px-2 py-1 rounded transition-colors duration-100 text-bbs-cyan ${open === s.key ? "bg-bbs-cyan text-bbs-bg font-bold underline" : "hover:underline"}`}
+          aria-current={open === s.key ? "page" : undefined}
+        >
+          ({s.key}) {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SectionContent(props: { children?: React.ReactNode; dangerouslySetInnerHTML?: { __html: string } }) {
+  if (props.dangerouslySetInnerHTML) {
+    return <div className="mt-2 text-base md:text-lg lg:text-xl leading-relaxed break-words" dangerouslySetInnerHTML={props.dangerouslySetInnerHTML} />;
+  }
+  return <div className="mt-2 text-base md:text-lg lg:text-xl leading-relaxed break-words">{props.children}</div>;
 }

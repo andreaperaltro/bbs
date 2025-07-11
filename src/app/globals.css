@@ -1,15 +1,25 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: 'amiga4ever';
+  src: url('/fonts/amiga4ever.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --bbs-bg: #000000;
+  --bbs-fg: #ffffff;
+  --bbs-white: #ffffff;
+  --bbs-green: #00ff00;
+  --bbs-cyan: #00ffff;
+  --bbs-yellow: #ffff00;
+  --bbs-magenta: #ff00ff;
+  --bbs-red: #ff0000;
+  --bbs-blue: #00bfff;
+  --background: var(--bbs-bg);
+  --foreground: var(--bbs-fg);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +31,25 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--bbs-fg) !important;
+  font-family: 'amiga4ever';
+}
+
+/* Cyan links */
+a, a:visited, a:active {
+  color: var(--bbs-cyan) !important;
+  text-decoration-color: var(--bbs-cyan) !important;
+}
+
+a:hover,
+a:focus {
+  text-decoration: underline;
+  text-decoration-color: var(--bbs-cyan);
+  outline: 2px solid var(--bbs-cyan);
+  outline-offset: 2px;
+}
+
+/* Magenta dividers */
+hr, .divider, .border-bbs-magenta, .border-bbs-magenta\/100 {
+  border-color: var(--bbs-magenta) !important;
 }
