@@ -5,6 +5,16 @@ import Image from "next/image";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
 
+// Define a type for portfolio entries
+interface PortfolioEntry {
+  title: string;
+  discipline: string;
+  client: string;
+  clientUrl?: string;
+  description: string;
+  images: string[];
+}
+
 const defaultSections = [
   { key: "A", label: "About", content: `My final goal is to convey thoughts and stories through different mediums and to raise the level of my creative developments with the constant research and study of new techniques for both client and personal projects. I am an avid observer of the world direction in terms of creativity, art and connections with a deep knowledge of the counterculture and the trends, might that be in design, music, movies, products and services. I believe that design is the ultimate representation of the understanding of human behaviours.` },
   { key: "T", label: "Techniques", content: `<strong>Graphic design:</strong> Adobe Creative Suite, Procreate<br/><strong>Digital design:</strong> Figma, Sketch<br/><strong>Generative:</strong> Processing, Java, Nodebox<br/><strong>3D Design:</strong> Cinema 4D, Blender` },
@@ -17,16 +27,16 @@ const defaultSections = [
 ];
 
 function PortfolioSection() {
-  const [entries, setEntries] = React.useState<any[]>([]);
+  const [entries, setEntries] = React.useState<PortfolioEntry[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function fetchPortfolio() {
       try {
         const querySnapshot = await getDocs(collection(db, "portfolio"));
-        const data = querySnapshot.docs.map(doc => doc.data());
+        const data = querySnapshot.docs.map(doc => doc.data() as PortfolioEntry);
         setEntries(data);
-      } catch (e) {
+      } catch {
         setEntries([]);
       } finally {
         setLoading(false);
@@ -63,13 +73,15 @@ function PortfolioSection() {
           {entry.images && entry.images.length > 0 && (
             <div className="overflow-x-auto">
               <div className="flex flex-row gap-4 min-w-[300px] pb-2">
-                {entry.images.map((img: string, i: number) => (
-                  <img
-                    key={i}
+                {entry.images.map((img) => (
+                  <Image
+                    key={img}
                     src={img}
-                    alt={entry.title + " image " + (i + 1)}
+                    alt={entry.title + " image"}
                     className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md"
                     style={{ minWidth: '200px' }}
+                    width={200}
+                    height={192}
                   />
                 ))}
               </div>
