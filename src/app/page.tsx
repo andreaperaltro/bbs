@@ -105,7 +105,7 @@ export default function Home() {
         const querySnapshot = await getDocs(collection(db, "sections"));
         const data = querySnapshot.docs.map(doc => doc.data());
         if (data.length > 0) setSections(data as typeof defaultSections);
-      } catch (e) {
+      } catch {
         // fallback to defaultSections
       } finally {
         setLoading(false);
@@ -184,7 +184,7 @@ export default function Home() {
 function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[] }) {
   return (
     <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-base md:text-xl lg:text-2xl font-[amiga4ever]`}>
-      {sections.map((s, i) => (
+      {sections.map((s) => (
         <button
           key={s.key}
           onClick={() => setOpen(s.key)}
