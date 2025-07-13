@@ -230,7 +230,6 @@ export default function Home() {
   // Animation state
   const [playedSections, setPlayedSections] = useState<{ [key: string]: boolean }>({});
   const [showTypewriter, setShowTypewriter] = useState(true);
-  const [isContentShort, setIsContentShort] = useState(false);
 
   useEffect(() => {
     async function fetchSections() {
@@ -282,15 +281,6 @@ export default function Home() {
     });
     setShowTypewriter(false);
   };
-
-  useEffect(() => {
-    function checkContentHeight() {
-      setIsContentShort(window.innerHeight >= document.body.scrollHeight);
-    }
-    checkContentHeight();
-    window.addEventListener("resize", checkContentHeight);
-    return () => window.removeEventListener("resize", checkContentHeight);
-  }, []);
 
   if (loading) {
     return (
