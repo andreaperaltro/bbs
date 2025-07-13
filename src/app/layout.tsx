@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import TopBar from "./TopBar";
 
 export const metadata: Metadata = {
   title: "Andrea Perato",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="font-[amiga4ever]">
+        <TopBar />
         {children}
       </body>
     </html>

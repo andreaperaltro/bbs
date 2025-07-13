@@ -57,10 +57,11 @@
 - **Server restarts are handled manually for now.**
 
 ## Recent Fixes & Improvements
-- **ESLint errors fixed for Vercel build:** No more `any` or unused variable errors in admin page.
+- **ESLint errors fixed for Vercel build:** No more `any` or unused variable errors in admin page. All handlers are now properly typed and cleaned up.
 - **Site title and metadata:** Now always shows "Andrea Perato" and correct description.
 - **Favicon:** Custom favicon is now reliably used in all environments.
 - **Gallery modal navigation:** Navigation arrows no longer close the modal.
+- **App is now fully linted, deployable, and up to date with best practices.**
 
 ## How to Develop Further
 - Restart the dev server after changing Tailwind config or global CSS.
