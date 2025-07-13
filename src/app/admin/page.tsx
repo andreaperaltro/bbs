@@ -112,7 +112,7 @@ export default function AdminPage() {
   }
 
   // Helper for image upload
-  async function handleImageUpload(files: FileList | null, onSuccess: (urls: string[]) => void, onError: (err: unknown) => void) {
+  async function handleImageUpload(files: FileList | null, onSuccess: (urls: string[]) => void) {
     if (!files) return;
     setUploading(true);
     setUploadError(null);
@@ -195,10 +195,7 @@ export default function AdminPage() {
               <input type="file" multiple accept="image/*" className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1" onChange={async (e) => {
                 handleImageUpload(
                   e.target.files,
-                  (urls) => setPortfolioForm(f => ({ ...f, images: [...f.images, ...urls] })),
-                  (_err: unknown) => {
-                    /* error handled in setUploadError */
-                  }
+                  (urls) => setPortfolioForm(f => ({ ...f, images: [...f.images, ...urls] }))
                 );
               }} />
               {uploading && <span className="text-bbs-yellow">Uploading...</span>}
