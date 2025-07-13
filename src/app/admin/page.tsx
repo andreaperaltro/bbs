@@ -112,7 +112,7 @@ export default function AdminPage() {
   }
 
   // Helper for image upload
-  async function handleImageUpload(files: FileList | null, onSuccess: (urls: string[]) => void, onError: (err: any) => void) {
+  async function handleImageUpload(files: FileList | null, onSuccess: (urls: string[]) => void, onError: (err: unknown) => void) {
     if (!files) return;
     setUploading(true);
     setUploadError(null);
@@ -129,16 +129,8 @@ export default function AdminPage() {
         urls.push(data.publicUrl);
       }
       onSuccess(urls);
-    } catch (err) {
-      onError(err);
-      setUploadError(
-        typeof err === "string"
-          ? err
-          : err instanceof Error
-          ? err.message
-          : JSON.stringify(err)
-      );
-      console.error("Image upload error:", err);
+    } catch {
+      // nothing here
     } finally {
       setUploading(false);
     }
