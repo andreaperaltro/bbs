@@ -4,6 +4,7 @@
 - **Framework:** Next.js (React)
 - **Styling:** Tailwind CSS (with custom BBS/ANSI palette)
 - **Database:** Firestore (Firebase)
+- **Image Storage:** Supabase Storage (public bucket, portfolio-images)
 - **Font:** Custom Amiga4ever font (for all titles and body text)
 
 ## Architecture & Design Principles
@@ -38,20 +39,28 @@
 - Add new sections or portfolio entries in Firestore.
 - The menu and content will update automatically.
 
+## Image Handling & Gallery
+- **Images are uploaded to Supabase Storage (bucket: portfolio-images).**
+- **Image URLs are saved in Firestore and displayed in the portfolio.**
+- **Gallery popup:** Clicking a project image opens a modal overlay with navigation arrows to browse all images for that project. Overlay is styled with BBS palette and closes only when clicking the background or close button.
+- **Placeholder images:** If an image URL is from via.placeholder.com, it is rendered with `<img>` for compatibility in local dev and production. All other images use Next.js `<Image />` for optimization.
+
+## Next.js Image Optimization
+- **External images (e.g., via.placeholder.com, Supabase) are configured in `next.config.js` using `images.remotePatterns`.**
+- **Deprecated `images.domains` config has been removed.**
+- **Supabase and placeholder images are both supported.**
+
+## Local Development & Hot Reload
+- **Default dev script uses Turbopack:** `npm run dev`
+- **For reliable hot reload, use legacy Next.js dev server:** `npm run dev:hot`
+- **If localhost:3000 is down, kill any process on that port and restart with `npm run dev:hot -- --port 3000`.**
+- **Server restarts are handled manually for now.**
+
 ## How to Develop Further
 - Restart the dev server after changing Tailwind config or global CSS.
 - Use DevTools to inspect elements and verify palette classes are applied.
 - Keep all styling changes in Tailwind and the palette for consistency.
-
-## Next.js Image Optimization
-- External images (e.g., from via.placeholder.com) require explicit configuration in `next.config.js`.
-- The project currently uses:
-  ```js
-  images: {
-    domains: ['via.placeholder.com'],
-  }
-  ```
-- **Note:** The `images.domains` configuration is deprecated in recent Next.js versions. For future compatibility, use `images.remotePatterns` as described in the [Next.js documentation](https://nextjs.org/docs/messages/next-image-unconfigured).
+- For gallery/modal changes, update the PortfolioSection in `src/app/page.tsx`.
 
 ---
 **Always update this file after significant changes.** 

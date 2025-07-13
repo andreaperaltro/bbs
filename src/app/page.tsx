@@ -29,6 +29,10 @@ const defaultSections = [
 function PortfolioSection() {
   const [entries, setEntries] = React.useState<PortfolioEntry[]>([]);
   const [loading, setLoading] = React.useState(true);
+  // Gallery modal state
+  const [galleryOpen, setGalleryOpen] = React.useState(false);
+  const [galleryEntryIdx, setGalleryEntryIdx] = React.useState<number | null>(null);
+  const [galleryImgIdx, setGalleryImgIdx] = React.useState<number>(0);
 
   React.useEffect(() => {
     async function fetchPortfolio() {
@@ -46,10 +50,10 @@ function PortfolioSection() {
   }, []);
 
   if (loading) {
-    return <div className="text-bbs-yellow text-xl">Loading portfolio...</div>;
+    return <div className="text-bbs-yellow text-base">Loading portfolio...</div>;
   }
   if (!entries.length) {
-    return <div className="text-bbs-yellow text-xl">No portfolio entries found.</div>;
+    return <div className="text-bbs-yellow text-base">No portfolio entries found.</div>;
   }
   return (
     <div className="space-y-10">
@@ -57,9 +61,9 @@ function PortfolioSection() {
         <div key={idx} className="mb-8 border-b border-bbs-magenta pb-8 last:border-b-0 last:pb-0">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-bbs-yellow mb-1">{entry.title}</h2>
-              <div className="text-base md:text-lg italic text-bbs-cyan">{entry.discipline}</div>
-              <div className="text-base md:text-lg">
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-bbs-yellow mb-1">{entry.title}</h2>
+              <div className="text-sm md:text-base lg:text-base italic text-bbs-cyan">{entry.discipline}</div>
+              <div className="text-sm md:text-base lg:text-base">
                 <span className="font-bold text-bbs-yellow">Client: </span>
                 {entry.clientUrl ? (
                   <a href={entry.clientUrl} target="_blank" rel="noopener noreferrer" className="underline text-bbs-cyan hover:text-bbs-yellow">{entry.client}</a>
@@ -68,27 +72,127 @@ function PortfolioSection() {
                 )}
               </div>
             </div>
-            <div className="text-base md:text-lg mt-2 md:mt-0 text-bbs-cyan">{entry.description}</div>
+            <div className="text-sm md:text-base lg:text-base mt-2 md:mt-0 text-bbs-cyan">{entry.description}</div>
           </div>
           {entry.images && entry.images.length > 0 && (
             <div className="overflow-x-auto">
               <div className="flex flex-row gap-4 min-w-[300px] pb-2">
-                {entry.images.map((img) => (
-                  <Image
-                    key={img}
-                    src={img}
-                    alt={entry.title + " image"}
-                    className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md"
-                    style={{ minWidth: '200px' }}
-                    width={200}
-                    height={192}
-                  />
+                {entry.images.map((img, imgIdx) => (
+                  img.includes('via.placeholder.com') ? (
+                    <button
+                      key={img}
+                      type="button"
+                      className="focus:outline-none"
+                      onClick={() => {
+                        setGalleryEntryIdx(idx);
+                        setGalleryImgIdx(imgIdx);
+                        setGalleryOpen(true);
+                      }}
+                    >
+                      <img
+                        src={img}
+                        alt={entry.title + " image"}
+                        className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
+                        style={{ minWidth: '200px' }}
+                        width={200}
+                        height={192}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      key={img}
+                      type="button"
+                      className="focus:outline-none"
+                      onClick={() => {
+                        setGalleryEntryIdx(idx);
+                        setGalleryImgIdx(imgIdx);
+                        setGalleryOpen(true);
+                      }}
+                    >
+                      <Image
+                        src={img}
+                        alt={entry.title + " image"}
+                        className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
+                        style={{ minWidth: '200px' }}
+                        width={200}
+                        height={192}
+                      />
+                    </button>
+                  )
                 ))}
               </div>
             </div>
           )}
         </div>
       ))}
+      {/* Gallery Modal */}
+      {galleryOpen && galleryEntryIdx !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          onClick={() => setGalleryOpen(false)}
+        >
+          <div
+            className="relative flex flex-col items-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 text-bbs-cyan text-3xl font-bold focus:outline-none hover:text-bbs-yellow"
+              onClick={() => setGalleryOpen(false)}
+              aria-label="Close gallery"
+            >
+              &times;
+            </button>
+            {entries[galleryEntryIdx].images[galleryImgIdx].includes('via.placeholder.com') ? (
+              <img
+                src={entries[galleryEntryIdx].images[galleryImgIdx]}
+                alt={entries[galleryEntryIdx].title + " image"}
+                className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
+                width={800}
+                height={600}
+              />
+            ) : (
+              <Image
+                src={entries[galleryEntryIdx].images[galleryImgIdx]}
+                alt={entries[galleryEntryIdx].title + " image"}
+                className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
+                width={800}
+                height={600}
+              />
+            )}
+            {/* Navigation */}
+            {entries[galleryEntryIdx].images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGalleryImgIdx((prev) => (prev === 0 ? entries[galleryEntryIdx].images.length - 1 : prev - 1));
+                  }}
+                  aria-label="Previous image"
+                >
+                  &#8592;
+                </button>
+                <button
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGalleryImgIdx((prev) => (prev === entries[galleryEntryIdx].images.length - 1 ? 0 : prev + 1));
+                  }}
+                  aria-label="Next image"
+                >
+                  &#8594;
+                </button>
+              </>
+            )}
+            {/* Image counter */}
+            {entries[galleryEntryIdx].images.length > 1 && (
+              <div className="mt-2 text-bbs-cyan text-sm">
+                {galleryImgIdx + 1} / {entries[galleryEntryIdx].images.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -127,14 +231,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-bbs-bg text-bbs-cyan font-[amiga4ever] text-base md:text-lg lg:text-xl">
-        <span className="text-bbs-yellow text-2xl">Loading...</span>
+      <div className="min-h-screen w-full flex items-center justify-center bg-bbs-bg text-bbs-cyan font-[amiga4ever] text-sm md:text-base lg:text-base">
+        <span className="text-bbs-yellow text-base">Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-bbs-bg text-bbs-fg font-[amiga4ever] text-base md:text-lg lg:text-xl">
+    <div className="min-h-screen w-full flex flex-col bg-bbs-bg text-bbs-fg font-[amiga4ever] text-sm md:text-base lg:text-base">
       {/* Top Menu Bar */}
       <MenuBar open={open} setOpen={setOpen} position="top" sections={sections} />
       {/* Flex row for main content area */}
@@ -154,10 +258,10 @@ export default function Home() {
                   onError={() => setImgError(true)}
                 />
               ) : (
-                <span className="text-3xl md:text-5xl text-bbs-blue">AP</span>
+                <span className="text-lg md:text-xl lg:text-2xl text-bbs-blue">AP</span>
               )}
             </div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-bbs-yellow">Andrea Perato</h1>
+            <h1 className="text-base md:text-lg lg:text-xl font-bold text-bbs-yellow">Andrea Perato</h1>
           </div>
           {/* Only show the selected section, with BBS border and background only around the content */}
           <div className="w-full">
@@ -183,7 +287,7 @@ export default function Home() {
 
 function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[] }) {
   return (
-    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-base md:text-xl lg:text-2xl font-[amiga4ever]`}>
+    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever]`}>
       {sections.map((s) => (
         <button
           key={s.key}
@@ -200,7 +304,7 @@ function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen:
 
 function SectionContent(props: { children?: React.ReactNode; dangerouslySetInnerHTML?: { __html: string } }) {
   if (props.dangerouslySetInnerHTML) {
-    return <div className="mt-2 text-base md:text-lg lg:text-xl leading-relaxed break-words" dangerouslySetInnerHTML={props.dangerouslySetInnerHTML} />;
+    return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={props.dangerouslySetInnerHTML} />;
   }
-  return <div className="mt-2 text-base md:text-lg lg:text-xl leading-relaxed break-words">{props.children}</div>;
+  return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words">{props.children}</div>;
 }
