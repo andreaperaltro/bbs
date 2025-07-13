@@ -305,7 +305,7 @@ export default function Home() {
       {/* Top Menu Bar */}
       <MenuBar open={open} setOpen={setOpen} position="top" sections={sections} />
       {/* Flex row for main content area */}
-      <div className="flex flex-col md:flex-row flex-1 w-full items-stretch">
+      <div className="flex flex-col md:flex-row flex-1 w-full items-stretch overflow-y-auto">
         {/* Main content area, left-aligned, BBS style only around content */}
         <div className="mt-6 mb-8 ml-0 w-full flex-1 px-4 md:px-8 lg:px-16">
           {/* Profile image and name always visible */}
@@ -346,15 +346,15 @@ export default function Home() {
         {/* Right side empty for now, can be used for future widgets or spacing */}
         <div className="hidden lg:block" />
       </div>
-      {/* Bottom Menu Bar */}
-      <MenuBar open={open} setOpen={setOpen} position="bottom" sections={sections} isFixed={isContentShort} />
+      {/* Bottom Menu Bar - always fixed */}
+      <MenuBar open={open} setOpen={setOpen} position="bottom" sections={sections} />
     </div>
   );
 }
 
-function MenuBar({ open, setOpen, position, sections, isFixed }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[]; isFixed?: boolean }) {
+function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[]; }) {
   return (
-    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever] ${position === "bottom" && isFixed ? "fixed bottom-0 left-0 right-0 z-40" : ""}`}>
+    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2 fixed bottom-0 left-0 right-0 z-50 bg-bbs-bg"} border-bbs-magenta text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever]`}>
       {sections.map((s) => (
         <button
           key={s.key}
