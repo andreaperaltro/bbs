@@ -32,6 +32,28 @@ module.exports = {
         '8xl': '6rem',       // 96px
         '9xl': '8rem',       // 128px
       },
+      animation: {
+        blink: 'blink 1s steps(2, start) infinite',
+        scrollbar: 'scrollbar 1.2s linear infinite',
+        bounce0: 'bounce 0.8s 0s infinite',
+        bounce1: 'bounce 0.8s 0.1s infinite',
+        bounce2: 'bounce 0.8s 0.2s infinite',
+        bounce3: 'bounce 0.8s 0.3s infinite',
+      },
+      keyframes: {
+        blink: {
+          '0%,100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
+        scrollbar: {
+          '0%': { left: '-30%' },
+          '100%': { left: '100%' },
+        },
+        bounce: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-1.5rem)' },
+        },
+      },
     },
   },
   plugins: [],
