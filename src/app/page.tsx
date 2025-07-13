@@ -232,13 +232,37 @@ export default function Home() {
   const [showTypewriter, setShowTypewriter] = useState(true);
 
   useEffect(() => {
-    async function fetchSections() {
+    async function fetchSections(force = false) {
       try {
+        const lastFetch = localStorage.getItem("lastSectionsFetch");
+        const cached = localStorage.getItem("sectionsCache");
+        const now = Date.now();
+        if (!force && lastFetch && cached && now - parseInt(lastFetch, 10) < 24 * 60 * 60 * 1000) {
+          // Use cached content if less than 24h old
+          setSections(JSON.parse(cached));
+          setLoading(false);
+          return;
+        }
+        // Fetch from Firestore
         const querySnapshot = await getDocs(collection(db, "sections"));
         const data = querySnapshot.docs.map(doc => doc.data());
-        if (data.length > 0) setSections(data as typeof defaultSections);
+        if (data.length > 0) {
+          setSections(data as typeof defaultSections);
+          localStorage.setItem("sectionsCache", JSON.stringify(data));
+          localStorage.setItem("lastSectionsFetch", now.toString());
+        } else if (cached) {
+          setSections(JSON.parse(cached));
+        } else {
+          setSections(defaultSections);
+        }
       } catch {
-        // fallback to defaultSections
+        // fallback to cache or defaultSections
+        const cached = localStorage.getItem("sectionsCache");
+        if (cached) {
+          setSections(JSON.parse(cached));
+        } else {
+          setSections(defaultSections);
+        }
       } finally {
         setLoading(false);
       }
