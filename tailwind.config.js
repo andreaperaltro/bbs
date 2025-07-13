@@ -35,10 +35,10 @@ module.exports = {
       animation: {
         blink: 'blink 1s steps(2, start) infinite',
         scrollbar: 'scrollbar 1.2s linear infinite',
-        bounce0: 'bounce 0.8s 0s infinite',
-        bounce1: 'bounce 0.8s 0.1s infinite',
-        bounce2: 'bounce 0.8s 0.2s infinite',
-        bounce3: 'bounce 0.8s 0.3s infinite',
+        bounce0: 'bounce0 0.8s 0s infinite',
+        bounce1: 'bounce1 0.8s 0.1s infinite',
+        bounce2: 'bounce2 0.8s 0.2s infinite',
+        bounce3: 'bounce3 0.8s 0.3s infinite',
       },
       keyframes: {
         blink: {
@@ -49,7 +49,19 @@ module.exports = {
           '0%': { left: '-30%' },
           '100%': { left: '100%' },
         },
-        bounce: {
+        bounce0: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-1.5rem)' },
+        },
+        bounce1: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-1.5rem)' },
+        },
+        bounce2: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-1.5rem)' },
+        },
+        bounce3: {
           '0%,100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-1.5rem)' },
         },

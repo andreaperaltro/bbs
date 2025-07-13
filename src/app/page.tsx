@@ -59,20 +59,21 @@ function PortfolioSection() {
     <div className="space-y-10">
       {entries.map((entry, idx) => (
         <div key={idx} className="mb-8 border-b border-bbs-magenta pb-8 last:border-b-0 last:pb-0">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4">
-            <div>
-              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-bbs-yellow mb-1">{entry.title}</h2>
-              <div className="text-sm md:text-base lg:text-base italic text-bbs-cyan">{entry.discipline}</div>
-              <div className="text-sm md:text-base lg:text-base">
-                <span className="font-bold text-bbs-yellow">Client: </span>
+          <div className="flex flex-col gap-2 mb-4 w-full">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-bbs-yellow mb-1 text-left w-full">{entry.title}</h2>
+            <div className="flex flex-row items-center gap-4 text-sm md:text-base lg:text-base italic text-bbs-cyan w-full">
+              <span>{entry.discipline}</span>
+              <span className="text-bbs-fg">|</span>
+              <span>
+                <span className="font-bold text-bbs-yellow not-italic">Client: </span>
                 {entry.clientUrl ? (
                   <a href={entry.clientUrl} target="_blank" rel="noopener noreferrer" className="underline text-bbs-cyan hover:text-bbs-yellow">{entry.client}</a>
                 ) : (
                   <span>{entry.client}</span>
                 )}
-              </div>
+              </span>
             </div>
-            <div className="text-sm md:text-base lg:text-base mt-2 md:mt-0 text-bbs-cyan">{entry.description}</div>
+            <div className="text-sm md:text-base lg:text-base mt-1 text-bbs-cyan text-left w-full">{entry.description}</div>
           </div>
           {entry.images && entry.images.length > 0 && (
             <div className="overflow-x-auto">
@@ -197,11 +198,38 @@ function PortfolioSection() {
   );
 }
 
+function TypewriterAnimation({ show, text, onDone }: { show: boolean; text: string; onDone: () => void }) {
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    if (!show) {
+      setDisplayed("");
+      return;
+    }
+    let i = 0;
+    setDisplayed("");
+    const interval = setInterval(() => {
+      setDisplayed((d) => d + text[i]);
+      i++;
+      if (i >= text.length) {
+        clearInterval(interval);
+        setTimeout(onDone, 200);
+      }
+    }, 12);
+    return () => clearInterval(interval);
+  }, [show, text, onDone]);
+  return (
+    <span className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words whitespace-pre-line text-bbs-fg font-[amiga4ever]">{displayed}</span>
+  );
+}
+
 export default function Home() {
   const [sections, setSections] = useState(defaultSections);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState<string>(defaultSections[0].key);
   const [imgError, setImgError] = useState(false);
+  // Animation state
+  const [playedSections, setPlayedSections] = useState<{ [key: string]: boolean }>({});
+  const [showTypewriter, setShowTypewriter] = useState(true);
 
   useEffect(() => {
     async function fetchSections() {
@@ -229,6 +257,31 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handler);
   }, [sections]);
 
+  // Load playedSections from sessionStorage on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem("bbs_played_sections");
+    if (stored) setPlayedSections(JSON.parse(stored));
+  }, []);
+
+  // When section changes, decide if we should animate
+  useEffect(() => {
+    if (playedSections[open]) {
+      setShowTypewriter(false);
+    } else {
+      setShowTypewriter(true);
+    }
+  }, [open, playedSections]);
+
+  // When animation finishes, mark section as played
+  const handleTypewriterDone = () => {
+    setPlayedSections((prev) => {
+      const updated = { ...prev, [open]: true };
+      sessionStorage.setItem("bbs_played_sections", JSON.stringify(updated));
+      return updated;
+    });
+    setShowTypewriter(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-bbs-bg text-bbs-cyan font-[amiga4ever] text-sm md:text-base lg:text-base">
@@ -244,10 +297,10 @@ export default function Home() {
       {/* Flex row for main content area */}
       <div className="flex flex-col md:flex-row flex-1 w-full items-stretch">
         {/* Main content area, left-aligned, BBS style only around content */}
-        <div className="mt-6 mb-8 ml-0 w-full flex-1">
+        <div className="mt-6 mb-8 ml-0 w-full flex-1 px-4 md:px-8 lg:px-16">
           {/* Profile image and name always visible */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 flex items-center justify-center rounded overflow-hidden mb-2">
+          <div className="flex flex-row items-center gap-4 mb-6">
+            <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
               {!imgError ? (
                 <Image 
                   src="/profile.png" 
@@ -258,10 +311,10 @@ export default function Home() {
                   onError={() => setImgError(true)}
                 />
               ) : (
-                <span className="text-lg md:text-xl lg:text-2xl text-bbs-blue">AP</span>
+                <div className="w-full h-full bg-bbs-magenta flex items-center justify-center text-bbs-bg">?</div>
               )}
             </div>
-            <h1 className="text-base md:text-lg lg:text-xl font-bold text-bbs-yellow">Andrea Perato</h1>
+            <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-bbs-yellow font-[amiga4ever] select-text">Andrea Perato</span>
           </div>
           {/* Only show the selected section, with BBS border and background only around the content */}
           <div className="w-full">
@@ -270,7 +323,11 @@ export default function Home() {
                 {section.key === "P" ? (
                   <PortfolioSection />
                 ) : (
-                  <SectionContent dangerouslySetInnerHTML={{__html: section.content}} />
+                  <SectionContentWithTypewriter
+                    html={section.content}
+                    showTypewriter={showTypewriter && open === section.key}
+                    onDone={handleTypewriterDone}
+                  />
                 )}
               </div>
             ))}
@@ -302,9 +359,11 @@ function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen:
   );
 }
 
-function SectionContent(props: { children?: React.ReactNode; dangerouslySetInnerHTML?: { __html: string } }) {
-  if (props.dangerouslySetInnerHTML) {
-    return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={props.dangerouslySetInnerHTML} />;
+function SectionContentWithTypewriter({ html, showTypewriter, onDone }: { html: string; showTypewriter: boolean; onDone: () => void }) {
+  // Strip HTML tags for animation, but render full HTML after
+  const text = html.replace(/<[^>]+>/g, "");
+  if (showTypewriter) {
+    return <TypewriterAnimation show={true} text={text} onDone={onDone} />;
   }
-  return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words">{props.children}</div>;
+  return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: html }} />;
 }

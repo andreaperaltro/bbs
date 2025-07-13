@@ -42,7 +42,7 @@
 ## Image Handling & Gallery
 - **Images are uploaded to Supabase Storage (bucket: portfolio-images).**
 - **Image URLs are saved in Firestore and displayed in the portfolio.**
-- **Gallery popup:** Clicking a project image opens a modal overlay with navigation arrows to browse all images for that project. Overlay is styled with BBS palette and closes only when clicking the background or close button.
+- **Gallery popup:** Clicking a project image opens a modal overlay with navigation arrows to browse all images for that project. Overlay is styled with BBS palette and closes only when clicking the background or close button. Navigation bug fixed so arrows do not close the modal.
 - **Placeholder images:** If an image URL is from via.placeholder.com, it is rendered with `<img>` for compatibility in local dev and production. All other images use Next.js `<Image />` for optimization.
 
 ## Next.js Image Optimization
@@ -55,6 +55,12 @@
 - **For reliable hot reload, use legacy Next.js dev server:** `npm run dev:hot`
 - **If localhost:3000 is down, kill any process on that port and restart with `npm run dev:hot -- --port 3000`.**
 - **Server restarts are handled manually for now.**
+
+## Recent Fixes & Improvements
+- **ESLint errors fixed for Vercel build:** No more `any` or unused variable errors in admin page.
+- **Site title and metadata:** Now always shows "Andrea Perato" and correct description.
+- **Favicon:** Custom favicon is now reliably used in all environments.
+- **Gallery modal navigation:** Navigation arrows no longer close the modal.
 
 ## How to Develop Further
 - Restart the dev server after changing Tailwind config or global CSS.
