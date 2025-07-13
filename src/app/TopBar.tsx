@@ -28,7 +28,7 @@ export default function TopBar() {
   const timeString = date.toLocaleTimeString('en-GB', { hour12: false });
 
   return (
-    <div className="w-full bg-bbs-bg text-bbs-cyan text-xs py-1 px-2 border-b border-bbs-magenta flex items-center justify-between font-[amiga4ever]">
+    <div className="w-full bg-white text-black text-xs py-1 px-2 border-b border-bbs-magenta flex items-center justify-between font-[amiga4ever]">
       <span>
         {location && (location.city || location.country_name)
           ? `${location.city ? location.city + ", " : ""}${location.country_name ? location.country_name : ""}`
