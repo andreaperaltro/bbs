@@ -230,6 +230,7 @@ export default function Home() {
   // Animation state
   const [playedSections, setPlayedSections] = useState<{ [key: string]: boolean }>({});
   const [showTypewriter, setShowTypewriter] = useState(true);
+  const [isContentShort, setIsContentShort] = useState(false);
 
   useEffect(() => {
     async function fetchSections() {
@@ -281,6 +282,15 @@ export default function Home() {
     });
     setShowTypewriter(false);
   };
+
+  useEffect(() => {
+    function checkContentHeight() {
+      setIsContentShort(window.innerHeight >= document.body.scrollHeight);
+    }
+    checkContentHeight();
+    window.addEventListener("resize", checkContentHeight);
+    return () => window.removeEventListener("resize", checkContentHeight);
+  }, []);
 
   if (loading) {
     return (
@@ -337,14 +347,14 @@ export default function Home() {
         <div className="hidden lg:block" />
       </div>
       {/* Bottom Menu Bar */}
-      <MenuBar open={open} setOpen={setOpen} position="bottom" sections={sections} />
+      <MenuBar open={open} setOpen={setOpen} position="bottom" sections={sections} isFixed={isContentShort} />
     </div>
   );
 }
 
-function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[] }) {
+function MenuBar({ open, setOpen, position, sections, isFixed }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[]; isFixed?: boolean }) {
   return (
-    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever]`}>
+    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2"} border-bbs-magenta bg-bbs-bg text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever] ${position === "bottom" && isFixed ? "fixed bottom-0 left-0 right-0 z-40" : ""}`}>
       {sections.map((s) => (
         <button
           key={s.key}
