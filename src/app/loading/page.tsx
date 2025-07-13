@@ -2,33 +2,35 @@
 
 import React, { useState } from "react";
 
+const aboutText = `My final goal is to convey thoughts and stories through different mediums and to raise the level of my creative developments with the constant research and study of new techniques for both client and personal projects. I am an avid observer of the world direction in terms of creativity, art and connections with a deep knowledge of the counterculture and the trends, might that be in design, music, movies, products and services. I believe that design is the ultimate representation of the understanding of human behaviours.`;
+
 const animations = [
   {
     key: "v1",
     label: "Typewriter",
     render: (show: boolean) => (
-      <TypewriterAnimation show={show} text="WELCOME TO THE BBS PORTFOLIO..." />
+      <TypewriterAnimation show={show} text={aboutText} />
     ),
   },
   {
     key: "v2",
     label: "Blinking Cursor",
     render: (show: boolean) => (
-      <BlinkingCursorAnimation show={show} text="LOADING DATA FROM MAINFRAME" />
+      <BlinkingCursorAnimation show={show} text={aboutText} />
     ),
   },
   {
     key: "v3",
     label: "Scrolling Bar",
     render: (show: boolean) => (
-      <ScrollingBarAnimation show={show} />
+      <ScrollingBarAnimation show={show} text={aboutText} />
     ),
   },
   {
     key: "v4",
     label: "ANSI Dots",
     render: (show: boolean) => (
-      <ANSIDotsAnimation show={show} />
+      <ANSIDotsAnimation show={show} text={aboutText} />
     ),
   },
 ];
@@ -78,11 +80,11 @@ function TypewriterAnimation({ show, text }: { show: boolean; text: string }) {
       setDisplayed((d) => d + text[i]);
       i++;
       if (i >= text.length) clearInterval(interval);
-    }, 40);
+    }, 12);
     return () => clearInterval(interval);
   }, [show, text]);
   return (
-    <span className="text-bbs-cyan text-lg md:text-xl font-mono tracking-widest">
+    <span className="text-bbs-cyan text-base md:text-lg tracking-widest font-[amiga4ever]">
       {displayed}
       <span className="animate-pulse">_</span>
     </span>
@@ -90,34 +92,43 @@ function TypewriterAnimation({ show, text }: { show: boolean; text: string }) {
 }
 
 function BlinkingCursorAnimation({ show, text }: { show: boolean; text: string }) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (!show) return setVisible(false);
+    setVisible(true);
+    const timeout = setTimeout(() => setVisible(false), 1200);
+    return () => clearTimeout(timeout);
+  }, [show]);
   return (
-    <span className="text-bbs-yellow text-lg md:text-xl font-mono tracking-widest">
+    <span className="text-bbs-yellow text-base md:text-lg tracking-widest font-[amiga4ever]">
       {show ? text : ""}
       <span className="ml-2 animate-blink">█</span>
     </span>
   );
 }
 
-function ScrollingBarAnimation({ show }: { show: boolean }) {
+function ScrollingBarAnimation({ show, text }: { show: boolean; text: string }) {
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-full h-4 bg-bbs-bg border border-bbs-cyan overflow-hidden relative">
+    <div className="w-full flex flex-col items-center font-[amiga4ever]">
+      <div className="w-full h-4 bg-bbs-bg border border-bbs-cyan overflow-hidden relative mb-4">
         {show && <div className="absolute left-0 top-0 h-full bg-bbs-cyan animate-scrollbar" style={{ width: '30%' }} />}
       </div>
-      <div className="mt-4 text-bbs-cyan font-mono">LOADING...</div>
+      <div className="text-bbs-cyan mb-2 font-[amiga4ever]">LOADING...</div>
+      <div className="text-bbs-fg text-sm md:text-base text-left w-full font-[amiga4ever]">{text}</div>
     </div>
   );
 }
 
-function ANSIDotsAnimation({ show }: { show: boolean }) {
+function ANSIDotsAnimation({ show, text }: { show: boolean; text: string }) {
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full font-[amiga4ever]">
       <div className="flex flex-row gap-2 mb-2">
         {[...Array(8)].map((_, i) => (
           <div key={i} className={`w-4 h-4 rounded-full ${show ? `animate-bounce${i % 4}` : ""} ${i % 2 === 0 ? "bg-bbs-cyan" : "bg-bbs-yellow"}`} />
         ))}
       </div>
-      <div className="text-bbs-yellow font-mono">CONNECTING TO BBS...</div>
+      <div className="text-bbs-yellow mb-2 font-[amiga4ever]">CONNECTING TO BBS...</div>
+      <div className="text-bbs-fg text-sm md:text-base text-left w-full font-[amiga4ever]">{text}</div>
     </div>
   );
 }
