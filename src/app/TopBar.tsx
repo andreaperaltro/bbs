@@ -11,9 +11,9 @@ export default function TopBar() {
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
-    fetch("https://ipapi.co/json/")
+    fetch("https://ipinfo.io/json")
       .then((res) => res.json())
-      .then((data) => setLocation({ city: data.city, country_name: data.country_name }))
+      .then((data) => setLocation({ city: data.city, country_name: data.country }))
       .catch(() => setLocation({ city: undefined, country_name: undefined }));
   }, []);
 
