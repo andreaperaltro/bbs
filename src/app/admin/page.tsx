@@ -196,7 +196,7 @@ export default function AdminPage() {
                 handleImageUpload(
                   e.target.files,
                   (urls) => setPortfolioForm(f => ({ ...f, images: [...f.images, ...urls] })),
-                  (err) => {
+                  (_err: unknown) => {
                     /* error handled in setUploadError */
                   }
                 );
