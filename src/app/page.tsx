@@ -368,7 +368,7 @@ export default function Home() {
 
 function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[]; }) {
   return (
-    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2 fixed bottom-0 left-0 right-0 z-50 bg-black"} border-bbs-magenta text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever]`}>
+    <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2 fixed bottom-0 left-0 right-0 z-50 bg-black hidden sm:flex"} border-bbs-magenta text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever] ${position === "top" ? "" : "hidden sm:flex"}`}>
       {sections.map((s) => (
         <button
           key={s.key}
