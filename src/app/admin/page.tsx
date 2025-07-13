@@ -11,6 +11,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { supabase } from "../supabaseClient";
+import Image from "next/image";
 
 // Types
 interface Section {
@@ -204,7 +205,7 @@ export default function AdminPage() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {portfolioForm.images.map((img, idx) => (
                     <div key={idx} className="relative">
-                      <img src={img} alt="Portfolio" className="w-16 h-16 object-cover border border-bbs-cyan" />
+                      <Image src={img} alt="Portfolio" className="w-16 h-16 object-cover border border-bbs-cyan" width={64} height={64} />
                       <button type="button" className="absolute top-0 right-0 bg-bbs-red text-bbs-bg px-1 rounded" onClick={() => setPortfolioForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))}>×</button>
                     </div>
                   ))}
