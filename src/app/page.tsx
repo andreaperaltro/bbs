@@ -297,7 +297,7 @@ function TypewriterAnimation({ show, text, onDone }: { show: boolean; text: stri
 }
 
 function stripHtml(html: string): string {
-  if (typeof window !== "undefined" && window.DOMParser) {
+  if (typeof window !== "undefined" && typeof window.DOMParser !== "undefined") {
     const doc = new window.DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
   }
@@ -468,7 +468,7 @@ function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen:
 
 function SectionContentWithTypewriter({ html, showTypewriter, onDone }: { html: string; showTypewriter: boolean; onDone: () => void }) {
   // Treat input as markdown, convert to HTML for rendering
-  const htmlContent = marked.parse(html);
+  const htmlContent: string = marked.parse(html) as string;
   // For typewriter, strip HTML tags to get plain text
   const text = stripHtml(htmlContent).replace(/\s+/g, " ").trim();
   // Debug logging
