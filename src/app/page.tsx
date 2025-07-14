@@ -322,7 +322,9 @@ export default function Home() {
         const now = Date.now();
         if (!force && lastFetch && cached && now - parseInt(lastFetch, 10) < 24 * 60 * 60 * 1000) {
           // Use cached content if less than 24h old
-          setSections(JSON.parse(cached));
+          const cachedSections = JSON.parse(cached);
+          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          setSections(cachedSections);
           setLoading(false);
           return;
         }
@@ -330,11 +332,14 @@ export default function Home() {
         const querySnapshot = await getDocs(collection(db, "sections"));
         const data = querySnapshot.docs.map(doc => doc.data());
         if (data.length > 0) {
+          data.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
           setSections(data as typeof defaultSections);
           localStorage.setItem("sectionsCache", JSON.stringify(data));
           localStorage.setItem("lastSectionsFetch", now.toString());
         } else if (cached) {
-          setSections(JSON.parse(cached));
+          const cachedSections = JSON.parse(cached);
+          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          setSections(cachedSections);
         } else {
           setSections(defaultSections);
         }
@@ -342,7 +347,9 @@ export default function Home() {
         // fallback to cache or defaultSections
         const cached = localStorage.getItem("sectionsCache");
         if (cached) {
-          setSections(JSON.parse(cached));
+          const cachedSections = JSON.parse(cached);
+          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          setSections(cachedSections);
         } else {
           setSections(defaultSections);
         }
