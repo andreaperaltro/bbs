@@ -52,6 +52,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [showMarkdownHelp, setShowMarkdownHelp] = useState(false);
 
   // Fetch data
   useEffect(() => {
@@ -238,7 +239,29 @@ export default function AdminPage() {
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Key" value={sectionForm.key} onChange={e => setSectionForm(f => ({ ...f, key: e.target.value }))} />
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Label" value={sectionForm.label} onChange={e => setSectionForm(f => ({ ...f, label: e.target.value }))} />
             </div>
-            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Content (HTML allowed)" value={sectionForm.content} onChange={e => setSectionForm(f => ({ ...f, content: e.target.value }))} />
+            <div className="flex items-center gap-2">
+              <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Content (Markdown supported)" value={sectionForm.content} onChange={e => setSectionForm(f => ({ ...f, content: e.target.value }))} />
+              <button type="button" aria-label="Markdown help" className="text-bbs-cyan text-xl px-2 py-1 border border-bbs-cyan rounded-full hover:bg-bbs-cyan hover:text-bbs-bg transition-colors" onClick={() => setShowMarkdownHelp(true)}>?</button>
+            </div>
+            {/* Markdown Help Modal */}
+            {showMarkdownHelp && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={() => setShowMarkdownHelp(false)}>
+                <div className="bg-bbs-bg border-2 border-bbs-cyan rounded p-6 max-w-md w-full text-bbs-fg relative" onClick={e => e.stopPropagation()}>
+                  <button className="absolute top-2 right-3 text-bbs-cyan text-2xl font-bold hover:text-bbs-yellow" onClick={() => setShowMarkdownHelp(false)}>&times;</button>
+                  <h3 className="text-lg font-bold mb-2 text-bbs-yellow">Markdown Cheat Sheet</h3>
+                  <ul className="text-sm list-disc pl-5 space-y-1">
+                    <li><b>Line break:</b> Press Enter</li>
+                    <li><b>Bold:</b> <code>**bold**</code></li>
+                    <li><b>Italic:</b> <code>*italic*</code></li>
+                    <li><b>Bold + Italic:</b> <code>***bold italic***</code></li>
+                    <li><b>Link:</b> <code>[text](url)</code></li>
+                    <li><b>List:</b> <code>- item</code> or <code>1. item</code></li>
+                    <li><b>Heading:</b> <code># H1</code>, <code>## H2</code></li>
+                    <li><b>Code:</b> <code>`inline`</code> or <code>```block```</code></li>
+                  </ul>
+                </div>
+              </div>
+            )}
             <button
               type="submit"
               className="bg-bbs-yellow text-bbs-bg border border-bbs-yellow font-bold px-4 py-2 rounded shadow hover:bg-bbs-bg hover:text-bbs-yellow hover:border-bbs-yellow transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
@@ -284,7 +307,29 @@ export default function AdminPage() {
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Client" value={portfolioForm.client} onChange={e => setPortfolioForm(f => ({ ...f, client: e.target.value }))} />
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" placeholder="Client URL" value={portfolioForm.clientUrl} onChange={e => setPortfolioForm(f => ({ ...f, clientUrl: e.target.value }))} />
             </div>
-            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Description" value={portfolioForm.description} onChange={e => setPortfolioForm(f => ({ ...f, description: e.target.value }))} />
+            <div className="flex items-center gap-2">
+              <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Description (Markdown supported)" value={portfolioForm.description} onChange={e => setPortfolioForm(f => ({ ...f, description: e.target.value }))} />
+              <button type="button" aria-label="Markdown help" className="text-bbs-cyan text-xl px-2 py-1 border border-bbs-cyan rounded-full hover:bg-bbs-cyan hover:text-bbs-bg transition-colors" onClick={() => setShowMarkdownHelp(true)}>?</button>
+            </div>
+            {/* Markdown Help Modal (shared) */}
+            {showMarkdownHelp && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={() => setShowMarkdownHelp(false)}>
+                <div className="bg-bbs-bg border-2 border-bbs-cyan rounded p-6 max-w-md w-full text-bbs-fg relative" onClick={e => e.stopPropagation()}>
+                  <button className="absolute top-2 right-3 text-bbs-cyan text-2xl font-bold hover:text-bbs-yellow" onClick={() => setShowMarkdownHelp(false)}>&times;</button>
+                  <h3 className="text-lg font-bold mb-2 text-bbs-yellow">Markdown Cheat Sheet</h3>
+                  <ul className="text-sm list-disc pl-5 space-y-1">
+                    <li><b>Line break:</b> Press Enter</li>
+                    <li><b>Bold:</b> <code>**bold**</code></li>
+                    <li><b>Italic:</b> <code>*italic*</code></li>
+                    <li><b>Bold + Italic:</b> <code>***bold italic***</code></li>
+                    <li><b>Link:</b> <code>[text](url)</code></li>
+                    <li><b>List:</b> <code>- item</code> or <code>1. item</code></li>
+                    <li><b>Heading:</b> <code># H1</code>, <code>## H2</code></li>
+                    <li><b>Code:</b> <code>`inline`</code> or <code>```block```</code></li>
+                  </ul>
+                </div>
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <label className="font-bold">Upload Images</label>
               <input type="file" multiple accept="image/*" className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1" onChange={async (e) => {

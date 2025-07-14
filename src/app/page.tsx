@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { marked } from "marked";
 
 // Define a type for portfolio entries
 interface PortfolioEntry {
@@ -281,7 +282,7 @@ function TypewriterAnimation({ show, text, onDone }: { show: boolean; text: stri
     let i = 0;
     setDisplayed("");
     const interval = setInterval(() => {
-      setDisplayed((d) => d + text[i]);
+      setDisplayed(text.slice(0, i + 1));
       i++;
       if (i >= text.length) {
         clearInterval(interval);
@@ -291,8 +292,17 @@ function TypewriterAnimation({ show, text, onDone }: { show: boolean; text: stri
     return () => clearInterval(interval);
   }, [show, text, onDone]);
   return (
-    <span className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words whitespace-pre-line text-bbs-fg font-[amiga4ever]">{displayed}</span>
+    <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words">{displayed}</div>
   );
+}
+
+function stripHtml(html: string): string {
+  if (typeof window !== "undefined" && window.DOMParser) {
+    const doc = new window.DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
+  }
+  // SSR fallback: regex (not perfect, but works for simple cases)
+  return html.replace(/<[^>]+>/g, "");
 }
 
 export default function Home() {
@@ -457,14 +467,15 @@ function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen:
 }
 
 function SectionContentWithTypewriter({ html, showTypewriter, onDone }: { html: string; showTypewriter: boolean; onDone: () => void }) {
-  // Strip HTML tags for animation, but render full HTML after
-  // Replace tags with a space, then collapse multiple spaces
-  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  // Treat input as markdown, convert to HTML for rendering
+  const htmlContent = marked.parse(html);
+  // For typewriter, strip HTML tags to get plain text
+  const text = stripHtml(htmlContent).replace(/\s+/g, " ").trim();
   // Debug logging
-  console.log('[Typewriter Debug] Raw HTML:', html);
+  console.log('[Typewriter Debug] Raw HTML:', htmlContent);
   console.log('[Typewriter Debug] Processed Text:', text);
   if (showTypewriter) {
     return <TypewriterAnimation show={true} text={text} onDone={onDone} />;
   }
-  return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
 }

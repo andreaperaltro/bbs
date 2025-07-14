@@ -37,6 +37,8 @@
 
 ## How to Add Content
 - Add new sections or portfolio entries in Firestore.
+- **Write content in Markdown (not HTML) in the admin.**
+- Use the '?' button next to textareas for a Markdown cheat sheet.
 - The menu and content will update automatically.
 
 ## Image Handling & Gallery
@@ -52,11 +54,21 @@
 
 ## Local Development & Hot Reload
 - **Default dev script uses Turbopack:** `npm run dev`
-- **For reliable hot reload, use legacy Next.js dev server:** `npm run dev:hot`
-- **If localhost:3000 is down, kill any process on that port and restart with `npm run dev:hot -- --port 3000`.**
+- **For reliable hot reload, use legacy Next.js dev server:** `npm run dev:hot` (now always runs on port 3000)
+- **To guarantee port 3000 is free, use:** `sh scripts/dev.sh` (kills any process on 3000, then starts dev server)
+- **If localhost:3000 is down, use the script above or manually kill the process.**
 - **Server restarts are handled manually for now.**
 
 ## Recent Fixes & Improvements
+- **Typewriter effect bug fixed:** No more missing letters; animation and static content now use identical styling for perfect visual match.
+- **Section and portfolio content now supports full Markdown formatting (not HTML):**
+  - Write content in Markdown in the admin (see the '?' button for a cheat sheet).
+  - All formatting (bold, italic, links, lists, headings, code, etc.) is supported.
+- **Admin textareas for long text are now taller and resizable.**
+- **Admin now has a '?' info button next to textareas:** Shows a Markdown cheat sheet modal for easy formatting reference.
+- **Dev server always runs on port 3000:**
+  - `dev:hot` script in package.json always uses port 3000.
+  - `scripts/dev.sh` kills any process on port 3000 before starting the dev server for a seamless experience.
 - **ESLint errors fixed for Vercel build:** No more `any` or unused variable errors in admin page. All handlers are now properly typed and cleaned up.
 - **Site title and metadata:** Now always shows "Andrea Perato" and correct description.
 - **Favicon:** Custom favicon is now reliably used in all environments.
