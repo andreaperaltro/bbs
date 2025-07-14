@@ -35,6 +35,37 @@ function PortfolioSection() {
   const [galleryEntryIdx, setGalleryEntryIdx] = React.useState<number | null>(null);
   const [galleryMediaIdx, setGalleryMediaIdx] = React.useState<number>(0);
 
+  // Ref to keep current media array in sync for keyboard nav
+  const mediaRef = React.useRef<string[]>([]);
+  React.useEffect(() => {
+    if (galleryOpen && galleryEntryIdx !== null) {
+      const entry = entries[galleryEntryIdx];
+      mediaRef.current = [
+        ...(entry.images || []),
+        ...((entry.videos && entry.videos.length > 0) ? entry.videos : [])
+      ];
+    } else {
+      mediaRef.current = [];
+    }
+  }, [galleryOpen, galleryEntryIdx, entries]);
+
+  // Keyboard navigation for gallery modal
+  React.useEffect(() => {
+    if (!galleryOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!galleryOpen) return;
+      if (e.key === 'ArrowLeft') {
+        setGalleryMediaIdx((prev) => (prev === 0 ? mediaRef.current.length - 1 : prev - 1));
+      } else if (e.key === 'ArrowRight') {
+        setGalleryMediaIdx((prev) => (prev === mediaRef.current.length - 1 ? 0 : prev + 1));
+      } else if (e.key === 'Escape') {
+        setGalleryOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [galleryOpen]);
+
   React.useEffect(() => {
     async function fetchPortfolio() {
       try {
@@ -152,22 +183,53 @@ function PortfolioSection() {
           ];
           const isVideo = (url: string) => (entry.videos || []).includes(url);
           const currentUrl = media[galleryMediaIdx];
+
           return (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
               onClick={() => setGalleryOpen(false)}
             >
+              {/* X button - fixed to top right of viewport */}
+              <button
+                className="fixed top-6 right-8 text-bbs-cyan text-4xl font-bold focus:outline-none hover:text-bbs-yellow z-60"
+                onClick={() => setGalleryOpen(false)}
+                aria-label="Close gallery"
+                style={{ zIndex: 60 }}
+              >
+                &times;
+              </button>
+              {/* Left arrow - fixed to left center of viewport */}
+              {media.length > 1 && (
+                <button
+                  className="fixed left-4 top-1/2 -translate-y-1/2 text-bbs-cyan text-5xl px-4 py-2 focus:outline-none hover:text-bbs-yellow z-60"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGalleryMediaIdx((prev) => (prev === 0 ? media.length - 1 : prev - 1));
+                  }}
+                  aria-label="Previous media"
+                  style={{ zIndex: 60 }}
+                >
+                  &#8592;
+                </button>
+              )}
+              {/* Right arrow - fixed to right center of viewport */}
+              {media.length > 1 && (
+                <button
+                  className="fixed right-4 top-1/2 -translate-y-1/2 text-bbs-cyan text-5xl px-4 py-2 focus:outline-none hover:text-bbs-yellow z-60"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGalleryMediaIdx((prev) => (prev === media.length - 1 ? 0 : prev + 1));
+                  }}
+                  aria-label="Next media"
+                  style={{ zIndex: 60 }}
+                >
+                  &#8594;
+                </button>
+              )}
               <div
                 className="relative flex flex-col items-center"
                 onClick={e => e.stopPropagation()}
               >
-                <button
-                  className="absolute top-4 right-4 text-bbs-cyan text-3xl font-bold focus:outline-none hover:text-bbs-yellow"
-                  onClick={() => setGalleryOpen(false)}
-                  aria-label="Close gallery"
-                >
-                  &times;
-                </button>
                 {isVideo(currentUrl) ? (
                   <video
                     src={currentUrl}
@@ -193,31 +255,6 @@ function PortfolioSection() {
                     width={800}
                     height={600}
                   />
-                )}
-                {/* Navigation */}
-                {media.length > 1 && (
-                  <>
-                    <button
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setGalleryMediaIdx((prev) => (prev === 0 ? media.length - 1 : prev - 1));
-                      }}
-                      aria-label="Previous media"
-                    >
-                      &#8592;
-                    </button>
-                    <button
-                      className="absolute right-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setGalleryMediaIdx((prev) => (prev === media.length - 1 ? 0 : prev + 1));
-                      }}
-                      aria-label="Next media"
-                    >
-                      &#8594;
-                    </button>
-                  </>
                 )}
                 {/* Media counter */}
                 {media.length > 1 && (
