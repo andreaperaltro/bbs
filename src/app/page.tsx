@@ -17,7 +17,15 @@ interface PortfolioEntry {
   videos?: string[];
 }
 
-const defaultSections = [
+// Define a type for sections
+interface Section {
+  key: string;
+  label: string;
+  content: string;
+  order?: number;
+}
+
+const defaultSections: Section[] = [
   { key: "A", label: "About", content: `My final goal is to convey thoughts and stories through different mediums and to raise the level of my creative developments with the constant research and study of new techniques for both client and personal projects. I am an avid observer of the world direction in terms of creativity, art and connections with a deep knowledge of the counterculture and the trends, might that be in design, music, movies, products and services. I believe that design is the ultimate representation of the understanding of human behaviours.` },
   { key: "T", label: "Techniques", content: `<strong>Graphic design:</strong> Adobe Creative Suite, Procreate<br/><strong>Digital design:</strong> Figma, Sketch<br/><strong>Generative:</strong> Processing, Java, Nodebox<br/><strong>3D Design:</strong> Cinema 4D, Blender` },
   { key: "S", label: "Skills", content: `Concept generation // Narrative strategy // Art direction // Typography // Illustration // Pattern design // Generative art // Digital design // User experience // 3D Design // Fashion product development` },
@@ -306,7 +314,7 @@ function stripHtml(html: string): string {
 }
 
 export default function Home() {
-  const [sections, setSections] = useState(defaultSections);
+  const [sections, setSections] = useState<Section[]>(defaultSections);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState<string>(defaultSections[0].key);
   const [imgError, setImgError] = useState(false);
@@ -322,23 +330,23 @@ export default function Home() {
         const now = Date.now();
         if (!force && lastFetch && cached && now - parseInt(lastFetch, 10) < 24 * 60 * 60 * 1000) {
           // Use cached content if less than 24h old
-          const cachedSections = JSON.parse(cached);
-          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          const cachedSections: Section[] = JSON.parse(cached);
+          cachedSections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           setSections(cachedSections);
           setLoading(false);
           return;
         }
         // Fetch from Firestore
         const querySnapshot = await getDocs(collection(db, "sections"));
-        const data = querySnapshot.docs.map(doc => doc.data());
+        const data = querySnapshot.docs.map(doc => doc.data() as Section);
         if (data.length > 0) {
-          data.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
-          setSections(data as typeof defaultSections);
+          data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          setSections(data);
           localStorage.setItem("sectionsCache", JSON.stringify(data));
           localStorage.setItem("lastSectionsFetch", now.toString());
         } else if (cached) {
-          const cachedSections = JSON.parse(cached);
-          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          const cachedSections: Section[] = JSON.parse(cached);
+          cachedSections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           setSections(cachedSections);
         } else {
           setSections(defaultSections);
@@ -347,8 +355,8 @@ export default function Home() {
         // fallback to cache or defaultSections
         const cached = localStorage.getItem("sectionsCache");
         if (cached) {
-          const cachedSections = JSON.parse(cached);
-          cachedSections.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          const cachedSections: Section[] = JSON.parse(cached);
+          cachedSections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           setSections(cachedSections);
         } else {
           setSections(defaultSections);
@@ -456,7 +464,7 @@ export default function Home() {
   );
 }
 
-function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: { key: string; label: string; content: string }[]; }) {
+function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen: (k: string) => void; position: "top" | "bottom"; sections: Section[]; }) {
   return (
     <div className={`w-full flex flex-row flex-wrap justify-center items-center gap-x-2 gap-y-1 py-2 px-2 ${position === "top" ? "border-b-2" : "border-t-2 fixed bottom-0 left-0 right-0 z-50 bg-black hidden sm:flex"} border-bbs-magenta text-bbs-cyan text-sm md:text-base lg:text-base font-[amiga4ever] ${position === "top" ? "" : "hidden sm:flex"}`}>
       {sections.map((s) => (
@@ -486,3 +494,6 @@ function SectionContentWithTypewriter({ html, showTypewriter, onDone }: { html: 
   }
   return <div className="mt-2 text-sm md:text-base lg:text-base leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
 }
+
+// For <img> placeholder images, disable Next.js warning
+// eslint-disable-next-line @next/next/no-img-element
