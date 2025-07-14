@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { supabase } from "../supabaseClient";
 import Image from "next/image";
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 // Types
 interface Section {
@@ -19,6 +20,7 @@ interface Section {
   key: string;
   label: string;
   content: string;
+  order?: number;
 }
 interface PortfolioEntry {
   id?: string;
@@ -28,6 +30,7 @@ interface PortfolioEntry {
   clientUrl?: string;
   description: string;
   images: string[];
+  order?: number;
 }
 
 type Tab = "sections" | "portfolio";
@@ -137,6 +140,28 @@ export default function AdminPage() {
     }
   }
 
+  // Sort by order
+  const sortedSections = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const sortedPortfolio = [...portfolio].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  // Add drag-and-drop handlers
+  function onDragEndSections(result: DropResult) {
+    if (!result.destination) return;
+    const items = Array.from(sortedSections);
+    const [removed] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, removed);
+    // TODO: Update order in Firestore
+    setSections(items);
+  }
+  function onDragEndPortfolio(result: DropResult) {
+    if (!result.destination) return;
+    const items = Array.from(sortedPortfolio);
+    const [removed] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, removed);
+    // TODO: Update order in Firestore
+    setPortfolio(items);
+  }
+
   // UI
   return (
     <div className="min-h-screen bg-bbs-bg text-bbs-fg font-[amiga4ever] p-4">
@@ -165,19 +190,30 @@ export default function AdminPage() {
             </button>
             {editingSectionId && <button type="button" className="ml-2 px-3 py-1 border border-bbs-cyan text-bbs-cyan rounded" onClick={() => { setSectionForm({ key: "", label: "", content: "" }); setEditingSectionId(null); }}>Cancel</button>}
           </form>
-          <ul className="space-y-2">
-            {sections.map(section => (
-              <li key={section.id} className="border border-bbs-cyan p-2 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div>
-                  <span className="font-bold">{section.key}</span>: {section.label}
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-2 py-1 bg-bbs-yellow text-bbs-bg rounded" onClick={() => handleSectionEdit(section)}>Edit</button>
-                  <button className="px-2 py-1 bg-bbs-red text-bbs-bg rounded" onClick={() => handleSectionDelete(section.id!)}>Delete</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <DragDropContext onDragEnd={onDragEndSections}>
+            <Droppable droppableId="sections">
+              {(provided) => (
+                <ul className="space-y-2" ref={provided.innerRef} {...provided.droppableProps}>
+                  {sortedSections.map((section, idx) => (
+                    <Draggable key={section.id} draggableId={section.id!} index={idx}>
+                      {(provided) => (
+                        <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="border border-bbs-cyan p-2 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-bbs-bg">
+                          <div>
+                            <span className="font-bold">{section.key}</span>: {section.label}
+                          </div>
+                          <div className="flex gap-2">
+                            <button className="px-2 py-1 bg-bbs-yellow text-bbs-bg rounded" onClick={() => handleSectionEdit(section)}>Edit</button>
+                            <button className="px-2 py-1 bg-bbs-red text-bbs-bg rounded" onClick={() => handleSectionDelete(section.id!)}>Delete</button>
+                          </div>
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       )}
       {tab === "portfolio" && (
@@ -221,19 +257,30 @@ export default function AdminPage() {
             </button>
             {editingPortfolioId && <button type="button" className="ml-2 px-3 py-1 border border-bbs-cyan text-bbs-cyan rounded" onClick={() => { setPortfolioForm({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [] }); setEditingPortfolioId(null); }}>Cancel</button>}
           </form>
-          <ul className="space-y-2">
-            {portfolio.map(entry => (
-              <li key={entry.id} className="border border-bbs-cyan p-2 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div>
-                  <span className="font-bold">{entry.title}</span> — {entry.discipline} — {entry.client}
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-2 py-1 bg-bbs-yellow text-bbs-bg rounded" onClick={() => handlePortfolioEdit(entry)}>Edit</button>
-                  <button className="px-2 py-1 bg-bbs-red text-bbs-bg rounded" onClick={() => handlePortfolioDelete(entry.id!)}>Delete</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <DragDropContext onDragEnd={onDragEndPortfolio}>
+            <Droppable droppableId="portfolio">
+              {(provided) => (
+                <ul className="space-y-2" ref={provided.innerRef} {...provided.droppableProps}>
+                  {sortedPortfolio.map((entry, idx) => (
+                    <Draggable key={entry.id} draggableId={entry.id!} index={idx}>
+                      {(provided) => (
+                        <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="border border-bbs-cyan p-2 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-bbs-bg">
+                          <div>
+                            <span className="font-bold">{entry.title}</span> — {entry.discipline} — {entry.client}
+                          </div>
+                          <div className="flex gap-2">
+                            <button className="px-2 py-1 bg-bbs-yellow text-bbs-bg rounded" onClick={() => handlePortfolioEdit(entry)}>Edit</button>
+                            <button className="px-2 py-1 bg-bbs-red text-bbs-bg rounded" onClick={() => handlePortfolioDelete(entry.id!)}>Delete</button>
+                          </div>
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       )}
     </div>
