@@ -9,6 +9,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  writeBatch,
 } from "firebase/firestore";
 import { supabase } from "../supabaseClient";
 import Image from "next/image";
@@ -30,6 +31,7 @@ interface PortfolioEntry {
   clientUrl?: string;
   description: string;
   images: string[];
+  videos?: string[];
   order?: number;
 }
 
@@ -43,12 +45,13 @@ export default function AdminPage() {
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   // Portfolio state
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>([]);
-  const [portfolioForm, setPortfolioForm] = useState<PortfolioEntry>({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [] });
+  const [portfolioForm, setPortfolioForm] = useState<PortfolioEntry>({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [], videos: [] });
   const [editingPortfolioId, setEditingPortfolioId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   // Loading
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   // Fetch data
   useEffect(() => {
@@ -99,13 +102,13 @@ export default function AdminPage() {
     } else {
       await addDoc(collection(db, "portfolio"), { ...portfolioForm });
     }
-    setPortfolioForm({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [] });
+    setPortfolioForm({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [], videos: [] });
     setEditingPortfolioId(null);
     fetchPortfolio();
     setLoading(false);
   }
   function handlePortfolioEdit(entry: PortfolioEntry) {
-    setPortfolioForm(entry);
+    setPortfolioForm({ ...entry, videos: entry.videos || [] });
     setEditingPortfolioId(entry.id!);
   }
   async function handlePortfolioDelete(id: string) {
@@ -140,26 +143,80 @@ export default function AdminPage() {
     }
   }
 
+  // Helper for video upload
+  async function handleVideoUpload(files: FileList | null, onSuccess: (urls: string[]) => void) {
+    if (!files) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const filePath = `portfolio-videos/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('portfolio-videos').upload(filePath, file, { upsert: true });
+        if (uploadError) throw uploadError;
+        // Get public URL
+        const { data } = supabase.storage.from('portfolio-videos').getPublicUrl(filePath);
+        if (!data || !data.publicUrl) throw new Error('Could not get public URL');
+        urls.push(data.publicUrl);
+      }
+      onSuccess(urls);
+    } catch {
+      // nothing here
+    } finally {
+      setUploading(false);
+    }
+  }
+
   // Sort by order
   const sortedSections = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const sortedPortfolio = [...portfolio].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   // Add drag-and-drop handlers
-  function onDragEndSections(result: DropResult) {
+  async function updateSectionOrder(newOrder: Section[]) {
+    setSavingOrder(true);
+    const batch = writeBatch(db);
+    newOrder.forEach((section, idx) => {
+      if (section.id) {
+        batch.update(doc(db, "sections", section.id), { order: idx });
+      }
+    });
+    await batch.commit();
+    setSections(newOrder.map((s, idx) => ({ ...s, order: idx })));
+    setSavingOrder(false);
+  }
+  async function updatePortfolioOrder(newOrder: PortfolioEntry[]) {
+    setSavingOrder(true);
+    const batch = writeBatch(db);
+    newOrder.forEach((entry, idx) => {
+      if (entry.id) {
+        batch.update(doc(db, "portfolio", entry.id), { order: idx });
+      }
+    });
+    await batch.commit();
+    setPortfolio(newOrder.map((e, idx) => ({ ...e, order: idx })));
+    setSavingOrder(false);
+  }
+
+  async function onDragEndSections(result: DropResult) {
     if (!result.destination) return;
     const items = Array.from(sortedSections);
     const [removed] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, removed);
-    // TODO: Update order in Firestore
-    setSections(items);
+    // Only update if order changed
+    if (items.some((s, i) => s.order !== i)) {
+      await updateSectionOrder(items);
+    }
   }
-  function onDragEndPortfolio(result: DropResult) {
+  async function onDragEndPortfolio(result: DropResult) {
     if (!result.destination) return;
     const items = Array.from(sortedPortfolio);
     const [removed] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, removed);
-    // TODO: Update order in Firestore
-    setPortfolio(items);
+    // Only update if order changed
+    if (items.some((e, i) => e.order !== i)) {
+      await updatePortfolioOrder(items);
+    }
   }
 
   // UI
@@ -172,6 +229,7 @@ export default function AdminPage() {
         <button onClick={() => setTab("portfolio")}
           className={`px-3 py-1 rounded border font-bold transition-colors duration-100 ${tab === "portfolio" ? "border-bbs-cyan text-bbs-cyan bg-bbs-bg" : "bg-bbs-cyan text-bbs-bg border-transparent"}`}>Portfolio</button>
       </div>
+      {savingOrder && <div className="text-bbs-yellow font-bold mb-2">Saving new order...</div>}
       {tab === "sections" && (
         <div>
           <h2 className="text-lg font-bold mb-2">Sections</h2>
@@ -247,6 +305,34 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+              <label className="font-bold mt-4">Upload Videos</label>
+              <input type="file" multiple accept="video/*" className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1" onChange={async (e) => {
+                handleVideoUpload(
+                  e.target.files,
+                  (urls) => setPortfolioForm(f => ({ ...f, videos: [...(f.videos || []), ...urls] }))
+                );
+              }} />
+              <label className="font-bold mt-2">Add Video URL</label>
+              <div className="flex gap-2">
+                <input type="url" placeholder="Paste video URL (YouTube, Vimeo, .mp4, etc.)" className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" id="video-url-input" />
+                <button type="button" className="bg-bbs-yellow text-bbs-bg px-2 rounded" onClick={() => {
+                  const input = document.getElementById('video-url-input') as HTMLInputElement;
+                  if (input && input.value) {
+                    setPortfolioForm(f => ({ ...f, videos: [...(f.videos || []), input.value] }));
+                    input.value = '';
+                  }
+                }}>Add</button>
+              </div>
+              {portfolioForm.videos && portfolioForm.videos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {portfolioForm.videos.map((vid, idx) => (
+                    <div key={idx} className="relative">
+                      <video src={vid} className="w-24 h-16 object-cover" controls preload="metadata" />
+                      <button type="button" className="absolute top-0 right-0 bg-bbs-red text-bbs-bg px-1 rounded" onClick={() => setPortfolioForm(f => ({ ...f, videos: f.videos!.filter((_, i) => i !== idx) }))}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <button
               type="submit"
@@ -255,13 +341,13 @@ export default function AdminPage() {
             >
               {editingPortfolioId ? "Update" : "Add"} Entry
             </button>
-            {editingPortfolioId && <button type="button" className="ml-2 px-3 py-1 border border-bbs-cyan text-bbs-cyan rounded" onClick={() => { setPortfolioForm({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [] }); setEditingPortfolioId(null); }}>Cancel</button>}
+            {editingPortfolioId && <button type="button" className="ml-2 px-3 py-1 border border-bbs-cyan text-bbs-cyan rounded" onClick={() => { setPortfolioForm({ title: "", discipline: "", client: "", clientUrl: "", description: "", images: [], videos: [] }); setEditingPortfolioId(null); }}>Cancel</button>}
           </form>
           <DragDropContext onDragEnd={onDragEndPortfolio}>
             <Droppable droppableId="portfolio">
               {(provided) => (
                 <ul className="space-y-2" ref={provided.innerRef} {...provided.droppableProps}>
-                  {sortedPortfolio.map((entry, idx) => (
+                  {portfolio.map((entry, idx) => (
                     <Draggable key={entry.id} draggableId={entry.id!} index={idx}>
                       {(provided) => (
                         <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="border border-bbs-cyan p-2 rounded flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-bbs-bg">

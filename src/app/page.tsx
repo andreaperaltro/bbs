@@ -13,6 +13,7 @@ interface PortfolioEntry {
   clientUrl?: string;
   description: string;
   images: string[];
+  videos?: string[];
 }
 
 const defaultSections = [
@@ -32,7 +33,7 @@ function PortfolioSection() {
   // Gallery modal state
   const [galleryOpen, setGalleryOpen] = React.useState(false);
   const [galleryEntryIdx, setGalleryEntryIdx] = React.useState<number | null>(null);
-  const [galleryImgIdx, setGalleryImgIdx] = React.useState<number>(0);
+  const [galleryMediaIdx, setGalleryMediaIdx] = React.useState<number>(0);
 
   React.useEffect(() => {
     async function fetchPortfolio() {
@@ -57,142 +58,177 @@ function PortfolioSection() {
   }
   return (
     <div className="space-y-10">
-      {entries.map((entry, idx) => (
-        <div key={idx} className="mb-8 border-b border-bbs-magenta pb-8 last:border-b-0 last:pb-0">
-          <div className="flex flex-col gap-2 mb-4 w-full">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-bbs-yellow mb-1 text-left w-full">{entry.title}</h2>
-            <div className="flex flex-row items-center gap-4 text-sm md:text-base lg:text-base italic text-bbs-cyan w-full">
-              <span>{entry.discipline}</span>
-              <span className="text-bbs-fg">|</span>
-              <span>
-                <span className="font-bold text-bbs-yellow not-italic">Client: </span>
-                {entry.clientUrl ? (
-                  <a href={entry.clientUrl} target="_blank" rel="noopener noreferrer" className="underline text-bbs-cyan hover:text-bbs-yellow">{entry.client}</a>
-                ) : (
-                  <span>{entry.client}</span>
-                )}
-              </span>
-            </div>
-            <div className="text-sm md:text-base lg:text-base mt-1 text-bbs-cyan text-left w-full">{entry.description}</div>
-          </div>
-          {entry.images && entry.images.length > 0 && (
-            <div className="overflow-x-auto">
-              <div className="flex flex-row gap-4 min-w-[300px] pb-2">
-                {entry.images.map((img, imgIdx) => (
-                  img.includes('via.placeholder.com') ? (
-                    <button
-                      key={img}
-                      type="button"
-                      className="focus:outline-none"
-                      onClick={() => {
-                        setGalleryEntryIdx(idx);
-                        setGalleryImgIdx(imgIdx);
-                        setGalleryOpen(true);
-                      }}
-                    >
-                      <img
-                        src={img}
-                        alt={entry.title + " image"}
-                        className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
-                        style={{ minWidth: '200px' }}
-                        width={200}
-                        height={192}
-                      />
-                    </button>
+      {entries.map((entry, idx) => {
+        // Combine images and videos for gallery
+        const media = [
+          ...(entry.images || []),
+          ...((entry.videos && entry.videos.length > 0) ? entry.videos : [])
+        ];
+        const isVideo = (url: string) => (entry.videos || []).includes(url);
+        return (
+          <div key={idx} className="mb-8 border-b border-bbs-magenta pb-8 last:border-b-0 last:pb-0">
+            <div className="flex flex-col gap-2 mb-4 w-full">
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-bbs-yellow mb-1 text-left w-full">{entry.title}</h2>
+              <div className="flex flex-row items-center gap-4 text-sm md:text-base lg:text-base italic text-bbs-cyan w-full">
+                <span>{entry.discipline}</span>
+                <span className="text-bbs-fg">|</span>
+                <span>
+                  <span className="font-bold text-bbs-yellow not-italic">Client: </span>
+                  {entry.clientUrl ? (
+                    <a href={entry.clientUrl} target="_blank" rel="noopener noreferrer" className="underline text-bbs-cyan hover:text-bbs-yellow">{entry.client}</a>
                   ) : (
+                    <span>{entry.client}</span>
+                  )}
+                </span>
+              </div>
+              <div className="text-sm md:text-base lg:text-base mt-1 text-bbs-cyan text-left w-full">{entry.description}</div>
+            </div>
+            {media.length > 0 && (
+              <div className="overflow-x-auto">
+                <div className="flex flex-row gap-4 min-w-[300px] pb-2">
+                  {media.map((url, mediaIdx) => (
                     <button
-                      key={img}
+                      key={url}
                       type="button"
-                      className="focus:outline-none"
+                      className="focus:outline-none relative"
                       onClick={() => {
                         setGalleryEntryIdx(idx);
-                        setGalleryImgIdx(imgIdx);
+                        setGalleryMediaIdx(mediaIdx);
                         setGalleryOpen(true);
                       }}
                     >
-                      <Image
-                        src={img}
-                        alt={entry.title + " image"}
-                        className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
-                        style={{ minWidth: '200px' }}
-                        width={200}
-                        height={192}
-                      />
+                      {isVideo(url) ? (
+                        <div className="relative">
+                          <video
+                            src={url}
+                            className="h-48 w-auto object-contain shadow-md !border-none !rounded-none"
+                            style={{ minWidth: '200px', border: 'none', borderRadius: 0, background: 'black' }}
+                            width={200}
+                            height={192}
+                            preload="metadata"
+                            muted
+                            playsInline
+                            onMouseOver={e => (e.currentTarget as HTMLVideoElement).play()}
+                            onMouseOut={e => { (e.currentTarget as HTMLVideoElement).pause(); (e.currentTarget as HTMLVideoElement).currentTime = 0; }}
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="text-bbs-yellow opacity-80"><circle cx="24" cy="24" r="24" fill="black" fillOpacity="0.5"/><polygon points="19,16 34,24 19,32" fill="currentColor"/></svg>
+                          </span>
+                        </div>
+                      ) : url.includes('via.placeholder.com') ? (
+                        <img
+                          src={url}
+                          alt={entry.title + " image"}
+                          className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
+                          style={{ minWidth: '200px' }}
+                          width={200}
+                          height={192}
+                        />
+                      ) : (
+                        <Image
+                          src={url}
+                          alt={entry.title + " image"}
+                          className="h-48 w-auto rounded border border-bbs-cyan bg-black object-contain shadow-md hover:scale-105 transition-transform duration-150"
+                          style={{ minWidth: '200px' }}
+                          width={200}
+                          height={192}
+                        />
+                      )}
                     </button>
-                  )
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
       {/* Gallery Modal */}
       {galleryOpen && galleryEntryIdx !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
-          onClick={() => setGalleryOpen(false)}
-        >
-          <div
-            className="relative flex flex-col items-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-bbs-cyan text-3xl font-bold focus:outline-none hover:text-bbs-yellow"
+        (() => {
+          const entry = entries[galleryEntryIdx];
+          const media = [
+            ...(entry.images || []),
+            ...((entry.videos && entry.videos.length > 0) ? entry.videos : [])
+          ];
+          const isVideo = (url: string) => (entry.videos || []).includes(url);
+          const currentUrl = media[galleryMediaIdx];
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
               onClick={() => setGalleryOpen(false)}
-              aria-label="Close gallery"
             >
-              &times;
-            </button>
-            {entries[galleryEntryIdx].images[galleryImgIdx].includes('via.placeholder.com') ? (
-              <img
-                src={entries[galleryEntryIdx].images[galleryImgIdx]}
-                alt={entries[galleryEntryIdx].title + " image"}
-                className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
-                width={800}
-                height={600}
-              />
-            ) : (
-              <Image
-                src={entries[galleryEntryIdx].images[galleryImgIdx]}
-                alt={entries[galleryEntryIdx].title + " image"}
-                className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
-                width={800}
-                height={600}
-              />
-            )}
-            {/* Navigation */}
-            {entries[galleryEntryIdx].images.length > 1 && (
-              <>
+              <div
+                className="relative flex flex-col items-center"
+                onClick={e => e.stopPropagation()}
+              >
                 <button
-                  className="absolute left-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setGalleryImgIdx((prev) => (prev === 0 ? entries[galleryEntryIdx].images.length - 1 : prev - 1));
-                  }}
-                  aria-label="Previous image"
+                  className="absolute top-4 right-4 text-bbs-cyan text-3xl font-bold focus:outline-none hover:text-bbs-yellow"
+                  onClick={() => setGalleryOpen(false)}
+                  aria-label="Close gallery"
                 >
-                  &#8592;
+                  &times;
                 </button>
-                <button
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setGalleryImgIdx((prev) => (prev === entries[galleryEntryIdx].images.length - 1 ? 0 : prev + 1));
-                  }}
-                  aria-label="Next image"
-                >
-                  &#8594;
-                </button>
-              </>
-            )}
-            {/* Image counter */}
-            {entries[galleryEntryIdx].images.length > 1 && (
-              <div className="mt-2 text-bbs-cyan text-sm">
-                {galleryImgIdx + 1} / {entries[galleryEntryIdx].images.length}
+                {isVideo(currentUrl) ? (
+                  <video
+                    src={currentUrl}
+                    className="max-h-[80vh] max-w-[90vw] bg-black object-contain shadow-lg"
+                    width={800}
+                    height={600}
+                    controls
+                    autoPlay
+                  />
+                ) : currentUrl.includes('via.placeholder.com') ? (
+                  <img
+                    src={currentUrl}
+                    alt={entry.title + " image"}
+                    className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
+                    width={800}
+                    height={600}
+                  />
+                ) : (
+                  <Image
+                    src={currentUrl}
+                    alt={entry.title + " image"}
+                    className="max-h-[80vh] max-w-[90vw] rounded border border-bbs-cyan bg-black object-contain shadow-lg"
+                    width={800}
+                    height={600}
+                  />
+                )}
+                {/* Navigation */}
+                {media.length > 1 && (
+                  <>
+                    <button
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setGalleryMediaIdx((prev) => (prev === 0 ? media.length - 1 : prev - 1));
+                      }}
+                      aria-label="Previous media"
+                    >
+                      &#8592;
+                    </button>
+                    <button
+                      className="absolute right-0 top-1/2 -translate-y-1/2 text-bbs-cyan text-4xl px-4 py-2 focus:outline-none hover:text-bbs-yellow"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setGalleryMediaIdx((prev) => (prev === media.length - 1 ? 0 : prev + 1));
+                      }}
+                      aria-label="Next media"
+                    >
+                      &#8594;
+                    </button>
+                  </>
+                )}
+                {/* Media counter */}
+                {media.length > 1 && (
+                  <div className="mt-2 text-bbs-cyan text-sm">
+                    {galleryMediaIdx + 1} / {media.length}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          );
+        })()
       )}
     </div>
   );
