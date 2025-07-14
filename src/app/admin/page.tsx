@@ -238,7 +238,7 @@ export default function AdminPage() {
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Key" value={sectionForm.key} onChange={e => setSectionForm(f => ({ ...f, key: e.target.value }))} />
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Label" value={sectionForm.label} onChange={e => setSectionForm(f => ({ ...f, label: e.target.value }))} />
             </div>
-            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full" required placeholder="Content (HTML allowed)" value={sectionForm.content} onChange={e => setSectionForm(f => ({ ...f, content: e.target.value }))} />
+            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Content (HTML allowed)" value={sectionForm.content} onChange={e => setSectionForm(f => ({ ...f, content: e.target.value }))} />
             <button
               type="submit"
               className="bg-bbs-yellow text-bbs-bg border border-bbs-yellow font-bold px-4 py-2 rounded shadow hover:bg-bbs-bg hover:text-bbs-yellow hover:border-bbs-yellow transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
@@ -284,7 +284,7 @@ export default function AdminPage() {
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" required placeholder="Client" value={portfolioForm.client} onChange={e => setPortfolioForm(f => ({ ...f, client: e.target.value }))} />
               <input className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 flex-1" placeholder="Client URL" value={portfolioForm.clientUrl} onChange={e => setPortfolioForm(f => ({ ...f, clientUrl: e.target.value }))} />
             </div>
-            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full" required placeholder="Description" value={portfolioForm.description} onChange={e => setPortfolioForm(f => ({ ...f, description: e.target.value }))} />
+            <textarea className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1 w-full min-h-[120px] resize-y" required placeholder="Description" value={portfolioForm.description} onChange={e => setPortfolioForm(f => ({ ...f, description: e.target.value }))} />
             <div className="flex flex-col gap-2">
               <label className="font-bold">Upload Images</label>
               <input type="file" multiple accept="image/*" className="border border-bbs-cyan bg-bbs-bg text-bbs-fg px-2 py-1" onChange={async (e) => {

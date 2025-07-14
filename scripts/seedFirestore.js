@@ -1,7 +1,7 @@
 // scripts/seedFirestore.js
 
 const { initializeApp, getApps } = require('firebase/app');
-const { getFirestore, collection, setDoc, doc } = require('firebase/firestore');
+const { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } = require('firebase/firestore');
 
 const firebaseConfig = {
   apiKey: "AIzaSyDohYHimO-EvkhMgBXM4lFhklGa14M8mpU",
@@ -80,6 +80,13 @@ const portfolioEntries = [
 ];
 
 async function seed() {
+  // Delete all existing sections
+  const sectionsSnap = await getDocs(collection(db, 'sections'));
+  for (const docSnap of sectionsSnap.docs) {
+    await deleteDoc(docSnap.ref);
+    console.log(`Deleted old section: ${docSnap.id}`);
+  }
+  // Seed new sections
   for (const section of sections) {
     const ref = doc(collection(db, 'sections'), section.key);
     await setDoc(ref, section);

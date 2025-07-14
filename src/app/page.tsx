@@ -458,7 +458,11 @@ function MenuBar({ open, setOpen, position, sections }: { open: string; setOpen:
 
 function SectionContentWithTypewriter({ html, showTypewriter, onDone }: { html: string; showTypewriter: boolean; onDone: () => void }) {
   // Strip HTML tags for animation, but render full HTML after
-  const text = html.replace(/<[^>]+>/g, "");
+  // Replace tags with a space, then collapse multiple spaces
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  // Debug logging
+  console.log('[Typewriter Debug] Raw HTML:', html);
+  console.log('[Typewriter Debug] Processed Text:', text);
   if (showTypewriter) {
     return <TypewriterAnimation show={true} text={text} onDone={onDone} />;
   }
